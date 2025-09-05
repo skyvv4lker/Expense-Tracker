@@ -98,8 +98,14 @@ No backend required – everything runs on the client side.
 ## 📸 Screenshots
 
 * Dashboard with charts & transactions
+  ![Dashboard Screenshot](images/home.png)
+* Monthly Report
+  ![Report Screenshot](images/report.png)
 * Import/Export section
+  ![Import/Export Screenshot](images/import-export.png)
 * Sign In & Sign Up modals
+  ![Sign up Screenshot](images/dashboard.png)
+
 
 ---
 
