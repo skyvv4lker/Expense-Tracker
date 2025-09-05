@@ -18,6 +18,37 @@
 
 
 </head>
+<!-- ===== Auth Modals (paste right after </header>) ===== -->
+<!-- Sign In Modal -->
+<div id="auth-section" class="modal" style="display: none; align-items: center; justify-content: center;">
+  <div class="modal-content" style="width:340px; max-width:90%;">
+    <span class="close-auth close-btn" style="cursor:pointer; float:right;">&times;</span>
+    <h2 style="margin-top:0;">Sign In</h2>
+    <form id="signin-form">
+      <input type="email" id="signin-email" placeholder="Email" required style="width:100%;padding:8px;margin:8px 0" />
+      <input type="password" id="signin-password" placeholder="Password" required style="width:100%;padding:8px;margin:8px 0" />
+      <button type="submit" style="width:100%;margin-top:8px">Sign In</button>
+    </form>
+    <p style="margin-top:12px">Don't have an account? <a href="#" id="show-signup">Create one</a></p>
+  </div>
+</div>
+
+<!-- Sign Up Modal -->
+<div id="signup-section" class="modal" style="display: none; align-items: center; justify-content: center;">
+  <div class="modal-content" style="width:340px; max-width:90%;">
+    <span class="close-auth close-btn" style="cursor:pointer; float:right;">&times;</span>
+    <h2 style="margin-top:0;">Create Account</h2>
+    <form id="signup-form">
+      <input type="text" id="signup-name" placeholder="Name" required style="width:100%;padding:8px;margin:8px 0" />
+      <input type="email" id="signup-email" placeholder="Email" required style="width:100%;padding:8px;margin:8px 0" />
+      <input type="password" id="signup-password" placeholder="Password" required style="width:100%;padding:8px;margin:8px 0" />
+      <button type="submit" style="width:100%;margin-top:8px">Sign Up</button>
+    </form>
+    <p style="margin-top:12px">Already have an account? <a href="#" id="show-signin">Sign in</a></p>
+  </div>
+</div>
+<!-- ===== end auth modals ===== -->
+
 <body>
   <!-- Navbar -->
   <header id="header">
@@ -28,7 +59,7 @@
           <li><a href="#home">Home</a></li>
           <li><a href="#report">Report</a></li>
           <li><a href="#io">Import/Export</a></li>
-          <li><a href="#signin">Sign-in</a></li>
+          <li><a href="#" id="signin-btn">Sign In</a></li>
         </ul>
       </nav>
     </div>
@@ -200,6 +231,149 @@
     </div>
 
 <script>
+
+/* ===== AUTH: sign in / sign up / logout (localStorage-backed) ===== */
+
+const signinBtn = document.getElementById("signin-btn");
+const authSection = document.getElementById("auth-section");
+const signupSection = document.getElementById("signup-section");
+const signinForm = document.getElementById("signin-form");
+const signupForm = document.getElementById("signup-form");
+const showSignup = document.getElementById("show-signup");
+const showSignin = document.getElementById("show-signin");
+const closeAuthBtns = document.querySelectorAll(".close-auth");
+
+let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+
+// Helper: save transactions per user (fallback to global key if no user)
+function saveUserTransactions() {
+  if (currentUser && currentUser.email) {
+    localStorage.setItem("transactions_" + currentUser.email, JSON.stringify(transactions));
+  } else {
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+  }
+}
+
+// Open / close helpers
+function openSignIn(e) {
+  if (e) e.preventDefault();
+  authSection.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function openSignUp(e) {
+  if (e) e.preventDefault();
+  authSection.style.display = "none";
+  signupSection.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeAuthModals() {
+  authSection.style.display = "none";
+  signupSection.style.display = "none";
+  document.body.style.overflow = "auto";
+}
+
+// Attach click to existing nav Sign In button
+signinBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  // if already logged in, act as logout
+  if (currentUser) {
+    if (confirm("Log out?")) {
+      handleLogout();
+    }
+    return;
+  }
+  openSignIn();
+});
+
+// modal background click to close
+window.addEventListener("click", (e) => {
+  if (e.target === authSection || e.target === signupSection) closeAuthModals();
+});
+closeAuthBtns.forEach(btn => btn.addEventListener("click", closeAuthModals));
+
+// switch links
+showSignup.addEventListener("click", (e) => { e.preventDefault(); openSignUp(); });
+showSignin.addEventListener("click", (e) => { e.preventDefault(); openSignIn(); });
+
+// SIGN UP
+signupForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = document.getElementById("signup-name").value.trim();
+  const email = document.getElementById("signup-email").value.trim().toLowerCase();
+  const password = document.getElementById("signup-password").value;
+
+  if (!name || !email || !password) {
+    alert("Please fill all fields.");
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  if (users.find(u => u.email === email)) {
+    alert("Email already registered. Please sign in.");
+    openSignIn();
+    return;
+  }
+
+  const newUser = { name, email, password };
+  users.push(newUser);
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("Account created — please sign in.");
+  signupForm.reset();
+  openSignIn();
+  document.getElementById("signin-email").value = email;
+});
+
+// SIGN IN
+signinForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const email = document.getElementById("signin-email").value.trim().toLowerCase();
+  const password = document.getElementById("signin-password").value;
+
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find(u => u.email === email && u.password === password);
+
+  if (!user) {
+    alert("Invalid email or password.");
+    return;
+  }
+
+  // success
+  currentUser = user;
+  localStorage.setItem("currentUser", JSON.stringify(user));
+  closeAuthModals();
+
+  // update nav UI
+  signinBtn.textContent = `Logout (${user.name.split(" ")[0] || user.email})`;
+
+  // load user's transactions (per-user storage)
+  transactions = JSON.parse(localStorage.getItem("transactions_" + user.email)) || [];
+  updateDashboard();
+});
+
+// LOGOUT
+function handleLogout() {
+  localStorage.removeItem("currentUser");
+  currentUser = null;
+  // if you want to clear in-memory transactions on logout:
+  transactions = [];
+  updateDashboard();
+  signinBtn.textContent = "Sign In";
+  alert("Logged out.");
+}
+
+// initialize nav state on load
+(function initAuthUI() {
+  if (currentUser) {
+    signinBtn.textContent = `Logout (${currentUser.name.split(" ")[0] || currentUser.email})`;
+    transactions = JSON.parse(localStorage.getItem("transactions_" + currentUser.email)) || [];
+  } else {
+    signinBtn.textContent = "Sign In";
+    // If you previously stored general 'transactions' (pre-auth), you could load them:
+    transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+  }
+})();
+
 // ======================
 // Data + Globals
 // ======================
@@ -486,7 +660,7 @@ addEntryForm.addEventListener("submit", e => {
 transactions.push({ date, category, amount, type, title });
 
 // ✅ Save to localStorage
-localStorage.setItem("transactions", JSON.stringify(transactions));
+saveUserTransactions();
 
 updateDashboard();
 addEntryForm.reset();
@@ -625,8 +799,9 @@ function exportPDF(data) {
   });
 
   doc.save("transactions.pdf");
-  localStorage.setItem("transactions", JSON.stringify(transactions));
+  saveUserTransactions();
   updateDashboard();
+
 }
 
 // Main export function
