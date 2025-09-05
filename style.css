@@ -1,0 +1,800 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content expands */
+main {
+  flex: 1;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;  /* ensures footer sticks to the bottom if content is short */
+  background: #0d0d0d;
+  color: #fff;
+  line-height: 1.5;
+}
+
+/* Navbar */
+#header {
+  background: #0d0d0d;
+  padding: 15px 0;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  width: 300px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li {
+  display: inline-block;
+  list-style: none;
+  margin: 10px 20px;
+  position: relative;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+nav ul li a:hover {
+  color: #f7931b;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+}
+nav ul li a::after {
+  content: ' ';
+  width: 0;
+  height: 3px;
+  background: #f7931b;
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  transition: 0.5s;
+}
+nav ul li a:hover::after {
+  width: 100%;
+}
+
+/* Finance Layout */
+.finance-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 40px 5%;
+  gap: 40px;
+}
+
+/* Chart */
+.chart-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+#chart-container {
+  position: relative;
+  width: 400px;
+  height: 400px;
+}
+
+#chart-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+#expenseChart {
+  width: 450px !important;
+  height: 450px !important;
+}
+
+/* Right Column */
+.sc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Cards */
+.card {
+  background: #2a2a2a;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  flex: 1;
+}
+
+.card.balance {
+  background: #add8e6;
+}
+
+.card.expense {
+  background: #f8bcbc;
+}
+
+.card.income {
+  background: #a7e6a2;
+}
+
+.card .label {
+  font-size: 16px;
+  opacity: 0.9;
+  color: #000000;
+}
+
+.card .amount {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 5px;
+  color: #000000;
+}
+
+/* Row for Income/Expense */
+.row {
+  display: flex;
+  gap: 20px;
+}
+
+/* Transaction Box */
+.transaction-box {
+  background: #222222;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.transaction-box h2 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  color: #f7931b;
+}
+
+.transaction-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.transaction-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-list th,
+.transaction-list td {
+  padding: 10px;
+  text-align: left;
+}
+
+.transaction-list th {
+  background: #2a2a2a;
+}
+
+.transaction-list tr:nth-child(even) {
+  background: #2f2f2f;
+}
+
+.transaction-list td.expense {
+  color: #ef4444;
+}
+
+.transaction-list td.income {
+  color: #22c55e;
+}
+
+/* Buttons */
+.see-more-btn {
+  background: transparent !important;
+  border: none;
+  color: #d6d6d6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.see-more-btn:hover {
+  background: transparent !important;
+  color: #f7931b;
+  text-decoration: underline;
+}
+
+.see-more-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.see-more-container,
+.add-entry-container {
+  margin-top: 10px;
+  text-align: center;
+}
+
+button {
+  background: #f7931b;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #ffae42;
+}
+
+/* Modal Background */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background-color: rgba(0,0,0,0.85);
+}
+
+/* Modal Content */
+.modal-content {
+  background: #1e1e1e;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  color: white;
+}
+
+/* Close Button */
+.close-btn {
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #f7931b;
+}
+.close-btn:hover {
+  color: #ffae42;
+}
+
+/* Modal Table */
+.modal-transaction-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modal-transaction-list th,
+.modal-transaction-list td {
+  padding: 10px;
+  text-align: left;
+}
+
+.modal-transaction-list th {
+  background: #2a2a2a;
+}
+
+.modal-transaction-list tr:nth-child(even) {
+  background: #2f2f2f;
+}
+
+.modal-transaction-list td.expense {
+  color: #ef4444;
+}
+.modal-transaction-list td.income {
+  color: #22c55e;
+}
+
+/* Scrollable modal content */
+.modal-transaction-list {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-top: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+/* Sticky Table Header */
+.modal-transaction-list thead th {
+  position: sticky;
+  top: 0;
+  background: #2a2a2a;
+  z-index: 2;
+}
+
+/* Add Entry Form */
+#add-entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#add-entry-form input,
+#add-entry-form select {
+  padding: 10px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+#add-entry-form input:focus,
+#add-entry-form select:focus {
+  outline: none;
+  border-color: #f7931b;
+}
+
+#add-entry-form button {
+  margin-top: 15px;
+  padding: 12px;
+  font-size: 16px;
+}
+
+/* ✅ Scrollable Category Menu (shorter dropdown area) */
+/* ✅ Category Dropdown (Scrollable with 3–4 visible options) */
+#category {
+  display: block;
+  width: 100%;
+  max-height: 100px;   /* around 3–4 options tall */
+  overflow-y: auto;    /* scroll inside */
+  border: 1px solid #fff;
+  border-radius: 6px;
+  background: #2a2a2a;
+  color: #fff;
+}
+#category option {
+  padding: 6px;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+
+
+/* ✅ Dark Theme for Datepicker (native) */
+input[type="date"] {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+input[type="date"]:focus {
+  border-color: #f7931b;
+  outline: none;
+}
+
+/* Chrome / Edge / Opera Datepicker */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(10deg);
+  cursor: pointer;
+}
+
+/* ✅ Custom Scrollbar Theme (Dark + Orange) */
+.transaction-list::-webkit-scrollbar,
+.modal-transaction-list::-webkit-scrollbar,
+#category::-webkit-scrollbar {
+  width: 8px;
+}
+
+.transaction-list::-webkit-scrollbar-track,
+.modal-transaction-list::-webkit-scrollbar-track,
+#category::-webkit-scrollbar-track {
+  background: #1a1a1a; /* dark track */
+  border-radius: 4px;
+}
+
+.transaction-list::-webkit-scrollbar-thumb,
+.modal-transaction-list::-webkit-scrollbar-thumb,
+#category::-webkit-scrollbar-thumb {
+  background: #f7931b; /* orange thumb */
+  border-radius: 4px;
+}
+
+.transaction-list::-webkit-scrollbar-thumb:hover,
+.modal-transaction-list::-webkit-scrollbar-thumb:hover,
+#category::-webkit-scrollbar-thumb:hover {
+  background: #ffae42; /* lighter orange on hover */
+}
+
+/* ===============================
+   ✅ Flatpickr Custom Theme (Black + White text)
+   =============================== */
+.flatpickr-calendar {
+  background: #ffffff;
+  border: 1px solid #f7931b;
+  border-radius: 8px;
+  color: #fff;
+}
+
+/* Days */
+.flatpickr-day {
+  background: #2a2a2a;
+  color: #fff;
+  border-radius: 4px;
+}
+.flatpickr-day:hover {
+  background: #f7931b;
+  color: #000;
+}
+.flatpickr-day.today {
+  background: #f7931b;
+  color: #000;
+  font-weight: bold;
+}
+.flatpickr-day.selected {
+  background: #ffae42;
+  color: #000;
+}
+
+/* Month & Year header + weekdays (white text) */
+.flatpickr-months,
+.flatpickr-current-month,
+.flatpickr-weekdays {
+  background: #1e1e1e;
+  color: #fff !important;
+}
+.flatpickr-current-month {
+  font-size: 14px !important;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Month dropdown (dark + visible options) */
+.flatpickr-monthDropdown-months {
+  background: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #f7931b;
+  font-size: 14px;
+  font-weight: 500;
+}
+.flatpickr-monthDropdown-months option {
+  background: #1e1e1e !important;
+  color: #fff !important;
+  font-size: 14px;
+}
+.flatpickr-monthDropdown-months option:hover,
+.flatpickr-monthDropdown-months option:focus {
+  background: #f7931b !important;
+  color: #000 !important;
+}
+
+/* Year input: type-able, no arrows */
+.flatpickr-current-month .numInputWrapper {
+  margin-left: 6px;
+  padding-right: 0;
+}
+.flatpickr-current-month .numInput.cur-year {
+  -moz-appearance: textfield;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #1e1e1e;
+  color: #fff;          /* white text */
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  width: 50px;
+  text-align: center;
+  cursor: text;
+}
+/* hide default spinners */
+.flatpickr-current-month .numInputWrapper span {
+  display: none !important;
+}
+/* remove any custom arrows if present */
+.flatpickr-current-month .numInputWrapper::before,
+.flatpickr-current-month .numInputWrapper::after {
+  display: none !important;
+}
+
+/* Prev/Next month arrows (white) */
+.flatpickr-months .flatpickr-prev-month svg,
+.flatpickr-months .flatpickr-next-month svg {
+  fill: #fff !important;
+}
+
+/* ✅ Custom Dropdown */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+  user-select: none;
+  cursor: pointer;
+}
+
+.dropdown-selected {
+  background: #2a2a2a;
+  color: #fff;
+  padding: 10px;
+  border: 1px solid #fff;
+  border-radius: 6px;
+}
+
+.dropdown-options {
+  position: absolute;
+  width: 100%;
+  max-height: 120px;   /* only 3–4 items visible */
+  overflow-y: auto;    /* scroll for more */
+  background: #2a2a2a;
+  border: 1px solid #fff;
+  border-radius: 6px;
+  margin-top: 5px;
+  display: none;       /* hidden by default */
+  z-index: 999;
+}
+
+.dropdown-options li {
+  padding: 10px;
+  color: #fff;
+}
+
+.dropdown-options li:hover {
+  background: #f7931b;
+  color: #000;
+}
+
+/* =========================
+   📊 Report Section Styling
+   ========================= */
+.report-section {
+  padding: 20px 5%;
+  margin-top: 0px;
+  background: #0d0d0d;
+  border-radius: 0px;
+  padding-top: 1px;
+}
+
+.report-section h1 {
+  margin: 1px 0;
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 10px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: flex-end; /* moves button to right */
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.budget-btn {
+  background: #f7931b;
+  color: #000;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.budget-btn:hover {
+  background: #ffae42;
+}
+
+#monthlyChart {
+  width: 100% !important;
+  max-width: 2050px;
+  height: 700px !important;
+  padding: 20px;          /* padding inside canvas */
+  background: #222222;
+  border-radius: 12px;
+  margin: 0 auto;           /* center align */
+  display: block;
+}
+
+/* =========================
+   Import / Export Section (orange + black theme)
+   Add this block AFTER your #monthlyChart rule and BEFORE </style>
+   ========================= */
+
+.io-section {
+  padding: 40px 5%;
+  background: linear-gradient(#0d0d0d, #101010);
+  color: #fff;
+}
+
+.io-section h1 {
+  text-align: center;
+  margin-bottom: 26px;
+  font-size: 32px;
+  color: #fff;
+}
+
+/* main container: two columns, responsive */
+.io-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  align-items: stretch;
+  flex-wrap: wrap;           /* stacks on small screens */
+  max-width: 2050px;
+  margin: 0 auto;
+  margin : 0 auto 40px auto;
+}
+
+/* each card */
+.io-card {
+  background: #222222;                                  /* dark card */
+  border: 1px solid rgba(247,147,27,0.06);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.6);
+  border-radius: 12px;
+  padding: 26px;
+  flex: 1;                                 /* two columns when wide */
+  min-width: 400px;
+  box-sizing: border-box;
+}
+
+/* card title */
+.io-card h2 {
+  margin: 0 0 14px 0;
+  font-size: 20px;
+  color: #fff;
+}
+
+/* dashed upload area */
+.upload-box {
+  border: 2px dashed rgba(247,147,27,0.3);
+  padding: 36px 18px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  text-align: center;
+  color: #bdbdbd;
+  background: #0b0b0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 160px;
+}
+
+.upload-box small {
+  color: #9aa;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+/* make the primary buttons orange-black themed, but scoped to cards */
+.io-card button {
+  background: #f7931b;
+  color: #000;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+/* "Export Now" is full width in markup; keep it neat */
+.io-card button[style*="width:100%"], .io-card .full-width {
+  width: 100%;
+  display: block;
+  text-align: center;
+}
+
+/* select styling inside cards */
+.io-card select {
+  width: 100%;
+  background: #121212;
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+  margin-bottom: 12px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* date-range buttons */
+.range-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.range-buttons button {
+  background: #222;
+  color: #fff;
+  border: 1px solid rgba(247,147,27,0.12);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.range-buttons button:hover {
+  background: #f7931b;
+  color: #000;
+  border-color: #f7931b;
+}
+
+/* small export format buttons row */
+.export-formats {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.export-formats button {
+  background: #141414;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.export-formats button:hover {
+  background: #f7931b;
+  color: #000;
+  border-color: #f7931b;
+}
+
+/* responsive tweaks */
+@media (max-width: 900px) {
+  .io-card { max-width: 100%; } /* stack vertically on smaller screens */
+  .io-container { gap: 18px; padding: 0 12px; }
+}
+
+/* footer within the IO section */
+.copyright {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+  background: #222222;
+  font-weight: 400;
+  color: #fff;
+  margin: 0;   /* remove gaps */
+}
+
+
+
+
+
+
