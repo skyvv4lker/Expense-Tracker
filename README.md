@@ -104,7 +104,7 @@ No backend required – everything runs on the client side.
 * Import/Export section
   ![Import/Export Screenshot](images/import-export.png)
 * Sign In & Sign Up modals
-  ![Sign up Screenshot](images/dashboard.png)
+  ![Sign up Screenshot](images/sign-in.png)
 
 
 ---
