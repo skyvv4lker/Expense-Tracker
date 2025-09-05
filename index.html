@@ -1,12 +1,661 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Expense Tracker</title>
-  </head>
-  <body class="bg-gray-50">
-    <div id="root"></div>
-    <script type="module" src="./src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Tracker</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js + annotation plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+</head>
+<body>
+  <!-- Navbar -->
+  <header id="header">
+    <div class="container">
+      <img src="images/logo.png" alt="Logo" class="logo">
+      <nav>
+        <ul id="sidemenu">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#report">Report</a></li>
+          <li><a href="#io">Import/Export</a></li>
+          <li><a href="#signin">Sign-in</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Finance Section -->
+  <main class="finance-section">
+    <!-- Left: Pie Chart -->
+    <div class="chart-wrapper">
+      <div id="chart-container">
+        <canvas id="expenseChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Right: Cards + Transactions -->
+    <div class="sc">
+      <!-- Cards -->
+      <div class="card balance">
+        <p class="label">Balance</p>
+        <p class="amount" id="balance">₹0</p>
+      </div>
+
+      <div class="row">
+        <div class="card expense">
+          <p class="label">Expense</p>
+          <p class="amount" id="expense">₹0</p>
+        </div>
+        <div class="card income">
+          <p class="label">Income</p>
+          <p class="amount" id="income">₹0</p>
+        </div>
+      </div>
+
+      <!-- Transactions -->
+      <div class="transaction-box">
+        <h2>Transaction Log</h2>
+        <div class="transaction-list">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody id="transaction-body"></tbody>
+          </table>
+        </div>
+        <div class="see-more-container">
+          <button class="see-more-btn">See More</button>
+        </div>
+        <div class="add-entry-container">
+          <button class="add-entry-btn">+ Add New Entry</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 📊 Monthly Report Section -->
+  <section id="report" class="report-section">
+    <h1>Report</h1>
+    <div class="chart-header">
+      <div></div>
+      <button class="budget-btn" onclick="setBudget()">Set Budget</button>
+    </div>
+    <canvas id="monthlyChart"></canvas>
+  </section>
+
+  <!-- Transaction Modal -->
+  <div id="transaction-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h2>All Transactions</h2>
+      <div class="modal-transaction-list">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody id="modal-transaction-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Entry Modal -->
+  <div id="add-entry-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn add-close">&times;</span>
+      <h2>Add Entry</h2>
+      <form id="add-entry-form">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="amount">Amount</label>
+        <input type="number" id="amount" name="amount" required>
+
+        <label for="category">Category</label>
+        <div class="custom-dropdown">
+          <div class="dropdown-selected">Select Category</div>
+          <ul class="dropdown-options">
+            <li data-value="Food">Food</li>
+            <li data-value="Salary">Salary</li>
+            <li data-value="Travel">Travel</li>
+            <li data-value="Bills">Bills</li>
+            <li data-value="Shopping">Shopping</li>
+            <li data-value="Utilities">Utilities</li>
+            <li data-value="Other">Other</li>
+          </ul>
+        </div>
+        <input type="hidden" name="category" id="category">
+
+        <label for="date">Date</label>
+        <input type="text" id="date" name="date" required>
+
+        <label for="type">Type</label>
+        <select id="type" name="type" required>
+          <option value="Expense">Expense</option>
+          <option value="Income">Income</option>
+        </select>
+
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+  
+    <!-- 📂 Import/Export Section -->
+  <section id="io" class="io-section">
+    <h1>Import & Export Data</h1>
+    <div class="io-container">
+      <div class="io-card">
+        <h2>Import</h2>
+        <div class="upload-box" id="dropZone">
+          📂 Drag & Drop your file here<br><small>CSV, Excel, JSON</small>
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.json" hidden />
+        </div>
+        <button id="importBtn">Validate & Import</button>
+      </div>
+      <div class="io-card">
+        <h2>Export</h2>
+        <select>
+          <option>Choose Export Format</option>
+          <option>CSV</option>
+          <option>Excel</option>
+          <option>PDF</option>
+        </select>
+        <div class="range-buttons">
+          <button>This month</button>
+          <button>Last 3 months</button>
+          <button>Custom</button>
+        </div>
+        <button style="width:100%">Export Now</button>
+        <div class="export-formats">
+          <button>CSV</button>
+          <button>Excel</button>
+          <button>PDF</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="copyright">
+      <p>Copyright © Ammy 2025</p>
+    </div>
+
+<script>
+// ======================
+// Data + Globals
+// ======================
+const transactions = [
+  { date: "2025-09-01", category: "Food", amount: 2500, type: "Expense" },
+  { date: "2025-09-01", category: "Salary", amount: 15000, type: "Income" },
+  { date: "2025-09-02", category: "Travel", amount: 1500, type: "Expense" },
+  { date: "2025-09-02", category: "Bills", amount: 500, type: "Expense" },
+  { date: "2025-09-03", category: "Shopping", amount: 1000, type: "Expense" },
+  { date: "2025-09-04", category: "Utilities", amount: 1710, type: "Expense" }
+];
+
+let chart, monthlyChart;
+let budget = 0; // ✅ default to 0
+
+// Center text for donut
+const centerTextPlugin = {
+  id: "centerText",
+  afterDraw(chart) {
+    const { ctx, chartArea: { top, bottom, left, right } } = chart;
+    const centerX = (left + right) / 2;
+    const centerY = (top + bottom) / 2;
+    ctx.save();
+    ctx.font = "bold 22px Arial";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Expense", centerX, centerY);
+    ctx.restore();
+  }
+};
+
+// ======================
+// Dashboard (donut + cards + table)
+// ======================
+function updateDashboard() {
+  let totalIncome = 0, totalExpense = 0;
+  transactions.forEach(t => {
+    if (t.type === "Income") totalIncome += t.amount;
+    else totalExpense += t.amount;
+  });
+  const balance = totalIncome - totalExpense;
+
+  document.getElementById("income").innerText = `₹${totalIncome}`;
+  document.getElementById("expense").innerText = `₹${totalExpense}`;
+  document.getElementById("balance").innerText = `₹${balance}`;
+
+  const tbody = document.getElementById("transaction-body");
+  tbody.innerHTML = "";
+  transactions.slice().reverse().forEach(t => {
+    tbody.innerHTML += `<tr>
+      <td>${t.date}</td>
+      <td>${t.category}</td>
+      <td class="${t.type.toLowerCase()}">${t.type === "Expense" ? "-" : "+"}₹${t.amount}</td>
+      <td class="${t.type.toLowerCase()}">${t.type}</td>
+    </tr>`;
+  });
+
+  const expenseData = {};
+  transactions.forEach(t => {
+    if (t.type === "Expense") {
+      expenseData[t.category] = (expenseData[t.category] || 0) + t.amount;
+    }
+  });
+  const labels = Object.keys(expenseData);
+  const data = Object.values(expenseData);
+
+  if (chart) chart.destroy();
+  const ctx = document.getElementById("expenseChart").getContext("2d");
+  chart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: [
+            "#8DBF43",
+            "#f7931b",
+            "#23A7C6",
+            "#A841BC",
+            "#FFD952",
+            "#6E39B7",
+            "#FFC9C6"
+          ],
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "70%",
+      plugins: {
+        legend: {
+          display: true,
+          position: "bottom",
+          labels: { color: "white", boxWidth: 20, padding: 20 }
+        }
+      },
+      layout: { padding: { right: 60 } }
+    },
+    plugins: [centerTextPlugin]
+  });
+
+  updateMonthlyChart();
+}
+
+// ======================
+// Monthly line report
+// ======================
+
+// Helpers to normalize months
+const monthKey = d =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+const keyToLabel = key => {
+  const [y, m] = key.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleString("default", {
+    month: "short",
+    year: "numeric"
+  });
+};
+
+function buildMonthlySeries() {
+  const totals = {};
+  const expenseRows = transactions.filter(t => t.type === "Expense");
+  if (expenseRows.length === 0) {
+    const now = new Date();
+    const only = monthKey(new Date(now.getFullYear(), now.getMonth(), 1));
+    return { months: [keyToLabel(only)], expenses: [0] };
+  }
+
+  let minDate = new Date(expenseRows[0].date);
+  expenseRows.forEach(t => {
+    const d = new Date(t.date);
+    const k = monthKey(new Date(d.getFullYear(), d.getMonth(), 1));
+    totals[k] = (totals[k] || 0) + t.amount;
+    if (d < minDate) minDate = d;
+  });
+
+  const start = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+  const today = new Date();
+  const end = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const orderedKeys = [];
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    orderedKeys.push(monthKey(cursor));
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  const months = orderedKeys.map(keyToLabel);
+  const expenses = orderedKeys.map(k => totals[k] || 0);
+  return { months, expenses };
+}
+
+function updateMonthlyChart() {
+  const { months, expenses } = buildMonthlySeries();
+  const ctx = document.getElementById("monthlyChart").getContext("2d");
+
+  if (monthlyChart) monthlyChart.destroy();
+
+  monthlyChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: "Expenses",
+          data: expenses,
+          borderColor: "cyan",
+          borderWidth: 2,
+          pointBackgroundColor: "cyan",
+          fill: false,
+          tension: 0.2
+        },
+        ...(budget > 0
+          ? [
+              {
+                label: "Over Budget",
+                data: expenses.map(v => (v > budget ? v : null)),
+                type: "bar",
+                backgroundColor: expenses.map(v =>
+                  v > budget ? "rgba(255,0,0,0.3)" : "transparent"
+                ),
+                borderWidth: 0
+              }
+            ]
+          : [])
+      ]
+    },
+    options: {
+      responsive: true,
+      layout: { padding: 20 },
+      plugins: {
+        legend: {
+          position: "top",
+          align: "end",
+          labels: { color: "#fff" }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Month",
+            color: "#fff",
+            font: { size: 14 }
+          },
+          ticks: { color: "#fff" },
+          grid: { color: "#444" }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Amount (₹)",
+            color: "#fff",
+            font: { size: 14 }
+          },
+          ticks: { color: "#fff" },
+          grid: { color: "#444" }
+        }
+      }
+    },
+    plugins: [Chart.registry.getPlugin("annotation")]
+  });
+}
+
+function setBudget() {
+  const newBudget = prompt("Enter new budget (₹):");
+  if (newBudget && !isNaN(newBudget)) {
+    budget = parseFloat(newBudget);
+    updateMonthlyChart();
+  }
+}
+
+// ======================
+// Modals + Add Entry
+// ======================
+const modal = document.getElementById("transaction-modal");
+document.querySelector(".see-more-btn").addEventListener("click", () => {
+  const tbody = document.getElementById("modal-transaction-body");
+  tbody.innerHTML = "";
+  transactions.slice().reverse().forEach(t => {
+    tbody.innerHTML += `<tr>
+      <td>${t.date}</td>
+      <td>${t.category}</td>
+      <td class="${t.type.toLowerCase()}">${t.type === "Expense" ? "-" : "+"}₹${t.amount}</td>
+      <td class="${t.type.toLowerCase()}">${t.type}</td>
+    </tr>`;
+  });
+  modal.style.display = "block";
+});
+document.querySelector(".close-btn").onclick = () => {
+  modal.style.display = "none";
+};
+window.onclick = e => {
+  if (e.target === modal) modal.style.display = "none";
+};
+
+const addEntryModal = document.getElementById("add-entry-modal");
+const addEntryBtn = document.querySelector(".add-entry-btn");
+const addCloseBtn = document.querySelector(".add-close");
+const addEntryForm = document.getElementById("add-entry-form");
+const categorySelect = document.getElementById("category");
+
+addEntryBtn.addEventListener("click", () => {
+  addEntryModal.style.display = "block";
+});
+addCloseBtn.addEventListener("click", () => {
+  addEntryModal.style.display = "none";
+});
+window.addEventListener("click", e => {
+  if (e.target === addEntryModal) addEntryModal.style.display = "none";
+});
+
+addEntryForm.addEventListener("submit", e => {
+  e.preventDefault();
+  const title = document.getElementById("title").value.trim();
+  const amount = parseFloat(document.getElementById("amount").value);
+  const type = document.getElementById("type").value;
+  const date = document.getElementById("date").value;
+  const category = categorySelect.value;
+  if (!title || isNaN(amount) || !category || !date) return;
+  transactions.push({ date, category, amount, type, title });
+  updateDashboard();
+  addEntryForm.reset();
+  addEntryModal.style.display = "none";
+});
+
+flatpickr("#date", { dateFormat: "Y-m-d", allowInput: true });
+
+document.querySelectorAll(".custom-dropdown").forEach(dropdown => {
+  const selected = dropdown.querySelector(".dropdown-selected");
+  const options = dropdown.querySelector(".dropdown-options");
+  const hiddenInput = document.getElementById("category");
+  selected.addEventListener("click", () => {
+    options.style.display = options.style.display === "block" ? "none" : "block";
+  });
+  options.querySelectorAll("li").forEach(option => {
+    option.addEventListener("click", () => {
+      selected.textContent = option.textContent;
+      hiddenInput.value = option.dataset.value;
+      options.style.display = "none";
+    });
+  });
+  document.addEventListener("DOMContentLoaded", () => {
+  const dropZone = document.getElementById("dropZone");
+  const fileInput = document.getElementById("fileInput");
+  const importBtn = document.getElementById("importBtn");
+  let selectedFile = null;
+
+  // Click to select
+  dropZone.addEventListener("click", () => fileInput.click());
+
+  // File select
+  fileInput.addEventListener("change", (e) => {
+    selectedFile = e.target.files[0];
+    dropZone.innerHTML = `📂 ${selectedFile.name}`;
+  });
+
+  // Drag events
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.style.border = "2px dashed #ff9800";
+  });
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.style.border = "1px dashed #ff9800";
+  });
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    selectedFile = e.dataTransfer.files[0];
+    dropZone.innerHTML = `📂 ${selectedFile.name}`;
+  });
+
+  // Import
+  importBtn.addEventListener("click", () => {
+    if (!selectedFile) {
+      alert("Please upload a file first!");
+      return;
+    }
+
+    const reader = new FileReader();
+    const ext = selectedFile.name.split(".").pop().toLowerCase();
+
+    reader.onload = (e) => {
+      if (ext === "json") {
+        const data = JSON.parse(e.target.result);
+        console.log("JSON Data:", data);
+        alert("✅ JSON Imported Successfully!");
+      } else if (ext === "csv") {
+        const text = e.target.result;
+        const rows = text.split("\n").map(r => r.split(","));
+        console.log("CSV Data:", rows);
+        alert("✅ CSV Imported Successfully!");
+      } else if (ext === "xlsx" || ext === "xls") {
+        const workbook = XLSX.read(e.target.result, { type: "binary" });
+        const sheet = workbook.SheetNames[0];
+        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheet]);
+        console.log("Excel Data:", data);
+        alert("✅ Excel Imported Successfully!");
+      } else {
+        alert("❌ Unsupported file type!");
+      }
+    };
+
+    if (ext === "xlsx" || ext === "xls") {
+      reader.readAsBinaryString(selectedFile);
+    } else {
+      reader.readAsText(selectedFile);
+    }
+  });
+});
+  // --- Export Logic ---
+const exportSelect = document.querySelector(".io-card select");
+const exportNowBtn = document.querySelector(".io-card button[style*='width:100%']");
+const exportFormatBtns = document.querySelectorAll(".export-formats button");
+
+// Helper: Convert array to CSV
+function toCSV(data) {
+  if (!data.length) return "";
+  const headers = Object.keys(data[0]).join(",");
+  const rows = data.map(r => Object.values(r).join(","));
+  return [headers, ...rows].join("\n");
+}
+
+// Export as CSV
+function exportCSV(data) {
+  const blob = new Blob([toCSV(data)], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "transactions.csv";
+  a.click();
+}
+
+// Export as Excel
+function exportExcel(data) {
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+  XLSX.writeFile(wb, "transactions.xlsx");
+}
+
+// Export as PDF
+function exportPDF(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(12);
+  doc.text("Transactions Report", 14, 20);
+
+  let y = 30;
+  data.forEach((t, i) => {
+    doc.text(`${t.date} | ${t.category} | ${t.amount} | ${t.type}`, 14, y);
+    y += 8;
+    if (y > 270) { // new page
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  doc.save("transactions.pdf");
+}
+
+// Main export function
+function handleExport(format) {
+  if (!transactions || transactions.length === 0) {
+    alert("⚠️ No transactions to export!");
+    return;
+  }
+  if (format === "CSV") exportCSV(transactions);
+  else if (format === "Excel") exportExcel(transactions);
+  else if (format === "PDF") exportPDF(transactions);
+}
+
+// --- Bind Export Buttons ---
+exportNowBtn.addEventListener("click", () => {
+  const format = exportSelect.value;
+  if (format === "Choose Export Format") {
+    alert("Please select a format first!");
+    return;
+  }
+  handleExport(format);
+});
+
+exportFormatBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    handleExport(btn.textContent.trim());
+  });
+});
+
+});
+// Initial load
+updateDashboard();
+
+</script>
+
+</body>
 </html>
