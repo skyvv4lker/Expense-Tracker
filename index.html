@@ -203,14 +203,13 @@
 // ======================
 // Data + Globals
 // ======================
-const transactions = [
-  { date: "2025-09-01", category: "Food", amount: 2500, type: "Expense" },
-  { date: "2025-09-01", category: "Salary", amount: 15000, type: "Income" },
-  { date: "2025-09-02", category: "Travel", amount: 1500, type: "Expense" },
-  { date: "2025-09-02", category: "Bills", amount: 500, type: "Expense" },
-  { date: "2025-09-03", category: "Shopping", amount: 1000, type: "Expense" },
-  { date: "2025-09-04", category: "Utilities", amount: 1710, type: "Expense" }
-];
+
+// ======================
+// Data + Globals
+// ======================
+
+// Load existing data or start empty
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 
 let chart, monthlyChart;
 let budget = 0; // ✅ default to 0
@@ -484,10 +483,14 @@ addEntryForm.addEventListener("submit", e => {
   const date = document.getElementById("date").value;
   const category = categorySelect.value;
   if (!title || isNaN(amount) || !category || !date) return;
-  transactions.push({ date, category, amount, type, title });
-  updateDashboard();
-  addEntryForm.reset();
-  addEntryModal.style.display = "none";
+transactions.push({ date, category, amount, type, title });
+
+// ✅ Save to localStorage
+localStorage.setItem("transactions", JSON.stringify(transactions));
+
+updateDashboard();
+addEntryForm.reset();
+addEntryModal.style.display = "none";
 });
 
 flatpickr("#date", { dateFormat: "Y-m-d", allowInput: true });
@@ -622,6 +625,8 @@ function exportPDF(data) {
   });
 
   doc.save("transactions.pdf");
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+  updateDashboard();
 }
 
 // Main export function
